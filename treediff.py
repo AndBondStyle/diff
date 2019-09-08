@@ -6,7 +6,7 @@ THRESHOLD = 0.6
 
 
 def is_atom(node):
-    if node.attrs.get('atom'): return True
+    if node.attrs.get('data-atom'): return True
     if node.name == 'li': return True
 
 
@@ -33,7 +33,7 @@ def flatten_children(root, no_versions=False):
             for word in words:
                 word_wrapper = soup.new_tag('span')
                 word_wrapper['class'] = 'word-wrapper'
-                word_wrapper['atom'] = '+'
+                word_wrapper['data-atom'] = '+'
                 word_wrapper.append(Text(word))
                 wrapper.append(word_wrapper)
             child = wrapper
@@ -133,14 +133,16 @@ def diff(files):
     for ver, file in enumerate(files):
         content = open(file).read()
         soup = Soup(content, 'html5lib')
-        body = soup.find('body')
-        body['data-ver'] = str(ver)
-        roots.append(body)
+        root = soup.find('body')
+        root.name = 'div'
+        root['class'] = 'root'
+        root['data-ver'] = str(ver)
+        roots.append(root)
     return merge(roots)
 
 
 if __name__ == '__main__':
     files = ['samples/' + file for file in os.listdir('samples')[:3]]
     html = str(diff(files))
-    print(html)
-    with open('output.html', 'w') as f: f.write(html)
+    file = open('diff.html', 'w')
+    file.write(html)

@@ -38,7 +38,7 @@ def flatten_children(root, no_versions=False):
         if child.name is None:
             if no_versions: continue
             soup = Soup(features='html5lib')
-            wrapper = soup.new_tag('div')
+            wrapper = soup.new_tag('span')
             wrapper['class'] = 'text-wrapper'
             words = str(child).split()
             for word in words:
@@ -72,6 +72,8 @@ def similarity(a, b):
         attr_b.pop('data-group', None)
         attr_b.pop('data-index', None)
         return attr_a == attr_b
+    if not a_children or not b_children:
+        return False
     common = reducer(a_children, b_children)
     # print('common:', common)
     return len(common) / min(len(a_children), len(b_children))
@@ -79,14 +81,16 @@ def similarity(a, b):
 
 
 def groupby(children):
-    groups = [[None]] + [[child] for child in children[0]]
-    for ver in children[1:]:
-        ver = [None] + ver
-        lcs = [[0] * len(ver) for _ in range(len(groups))]
-        prev = [[None] * len(ver) for _ in range(len(groups))]
+    groups = [[child] for child in children[0]]
+    for version in children[1:]:
+        ver = [None] + version
+        tgr = [[None]] + groups
+        print(tgr)
+        lcs = [[0] * len(ver) for _ in range(len(tgr))]
+        prev = [[None] * len(ver) for _ in range(len(tgr))]
         for i in range(1, len(lcs)):
             for j in range(1, len(lcs[i])):
-                if any(similarity(child, ver[j]) > THRESHOLD for child in groups[i]):
+                if any(similarity(child, ver[j]) > THRESHOLD for child in tgr[i]):
                     lcs[i][j] = lcs[i - 1][j - 1] + 1
                     prev[i][j] = (i - 1, j - 1)
                 elif lcs[i - 1][j] >= lcs[i][j - 1]:
@@ -101,22 +105,25 @@ def groupby(children):
 
         def build_lcs(i, j):
             nonlocal result
-            if i == 0:
+            if i == 0 and j == 0:
+                pass
+            elif i == 0:
                 result.append(ver[1:j+1])
             elif j == 0:
-                result = result + groups[1:i+1]
+                result = result + tgr[1:i+1]
             elif prev[i][j] == (i - 1, j - 1):
                 build_lcs(i - 1, j - 1)
-                result.append(groups[i] + [ver[j]])
+                result.append(tgr[i] + [ver[j]])
             elif prev[i][j] == (i - 1, j):
                 build_lcs(i - 1, j)
-                result.append(groups[i])
+                result.append(tgr[i])
             else:
                 build_lcs(i, j - 1)
                 result.append([ver[j]])
 
-        build_lcs(len(groups) - 1, len(ver) - 1)
-        groups = result
+        build_lcs(len(tgr) - 1, len(ver) - 1)
+        print('Res:', result)
+        groups = result[:]
 
     # children_copy = children[:]
     # while children_copy:
@@ -131,7 +138,7 @@ def groupby(children):
     #     for i in reversed(similar_indices):
     #         del children_copy[i]
 
-    return groups[1:]
+    return groups
 
 
 # def topsort(graph):

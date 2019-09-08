@@ -28,7 +28,9 @@ export default class InlineSelector {
      */
     push(el) {
         vers(el).split(',').forEach(version => this.vers.add(version));
-        this.div.appendChild(el);
+        const node = el.cloneNode(true);
+        node.innerText = node.innerText.trim();
+        this.div.appendChild(node);
     }
 
     /**

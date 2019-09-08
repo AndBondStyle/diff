@@ -23,19 +23,19 @@ window.onload = async () => {
         // add inline selectors
         newChildren = [];
         [...text.children].forEach(child => {
-            if (newChildren.length &&
+            if (vers(text) == vers(child)) {
+                newChildren.push(child);
+            } else if (newChildren.length &&
                     last(newChildren) instanceof InlineSelector &&
                     !last(newChildren).anyOf(vers(child))) {
                 last(newChildren).push(child);
-            } else if (vers(root()) == vers(child)) {
-                newChildren.push(child);
             } else {
                 const selector = new InlineSelector();
                 selector.push(child);
                 newChildren.push(selector);
             }
+            text.removeChild(child);
         });
-        text.innerHTML = '';
         newChildren.forEach(child => {
             text.appendChild(
                 child instanceof InlineSelector ?
@@ -46,6 +46,8 @@ window.onload = async () => {
 
     const rt = root();
     rt.parentNode.replaceChild(collectCarousels(rt), rt);
+
+    applyDifferenceClass(root());
 
     document.querySelectorAll('tr').forEach(row => {
         const cells = Object.freeze([
@@ -89,4 +91,17 @@ function collectCarousels(el) {
         );
     });
     return el.cloneNode(true);
+}
+
+/**
+ * @param {HTMLElement} el 
+ */
+function applyDifferenceClass(el) {
+    [...el.children].forEach(child => {
+        if (vers(el) != vers(child) && vers(child)) {
+            child.classList.add('difference');
+        } else {
+            applyDifferenceClass(child);
+        }
+    });
 }

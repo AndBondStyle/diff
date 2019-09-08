@@ -74,7 +74,16 @@ $carousel-transition-duration: 200ms;
 .inline-difference {
     @extend .rounded;
     background: transparentize($primary, 0.7);
+    &:last-of-type {
+        padding-right: 0rem;
+        margin-right: 0.1rem;
+    }
+    :not(:last-of-type)::after {
+        content: ' | ';
+        color: '#00000055';
+    }
     padding: 0.2em 0.4em;
+    margin-right: 0.3rem;
 }
 
 // MISC

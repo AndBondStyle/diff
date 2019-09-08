@@ -41,10 +41,30 @@ $carousel-transition-duration: 200ms;
     margin-right: -$diff-container-padding;
     margin-bottom: 1rem;
     padding: 1rem $diff-container-padding;
+    font-weight: bold;
 
     & + .difference {
         margin-top: -1rem;
         border-top: 4px dotted $diff-container-bg;
+    }
+
+    &.accepted {
+        .actions, .inline-difference {
+            background: transparentize($success, 0.7);
+        }
+        font-weight: initial;
+        background: transparentize($success, 0.7);
+    }
+
+    &.rejected {
+        .actions, .inline-difference {
+            background: transparentize($danger, 0.7);
+        }
+
+        font-weight: initial;
+        background: transparentize($danger, 0.7);
+        color: transparentize($dark, 0.7);
+        //text-decoration: line-through;
     }
 
     .actions {
@@ -55,7 +75,6 @@ $carousel-transition-duration: 200ms;
         transform: translate(100%, 0);
         border-top-right-radius: $border-radius;
         border-bottom-right-radius: $border-radius;
-
         background: transparentize($primary, 0.7);
 
         padding: 2rem;
@@ -69,6 +88,13 @@ $carousel-transition-duration: 200ms;
             margin: 0.25rem;
         }
     }
+}
+
+.carousel-item button {
+    position: absolute;
+    z-index: 10;
+    top: 2rem;
+    right: 1rem;
 }
 
 .inline-difference {

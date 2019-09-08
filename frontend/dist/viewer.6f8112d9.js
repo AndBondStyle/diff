@@ -8115,7 +8115,67 @@ define(String.prototype, "padRight", "".padEnd);
 "pop,reverse,shift,keys,values,entries,indexOf,every,some,forEach,map,filter,find,findIndex,includes,join,slice,concat,push,splice,unshift,sort,lastIndexOf,reduce,reduceRight,copyWithin,fill".split(",").forEach(function (key) {
   [][key] && define(Array, key, Function.call.bind([][key]));
 });
-},{"core-js/shim":"../node_modules/core-js/shim.js","regenerator-runtime/runtime":"../node_modules/regenerator-runtime/runtime.js","core-js/fn/regexp/escape":"../node_modules/core-js/fn/regexp/escape.js"}],"util.js":[function(require,module,exports) {
+},{"core-js/shim":"../node_modules/core-js/shim.js","regenerator-runtime/runtime":"../node_modules/regenerator-runtime/runtime.js","core-js/fn/regexp/escape":"../node_modules/core-js/fn/regexp/escape.js"}],"image-selector.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
+
+var ImageSelector =
+/*#__PURE__*/
+function () {
+  function ImageSelector() {
+    _classCallCheck(this, ImageSelector);
+
+    this.id = Math.random();
+    this.imgs = [];
+  }
+  /**
+   * @param {HTMLImageElement} img 
+   */
+
+
+  _createClass(ImageSelector, [{
+    key: "push",
+    value: function push(img) {
+      this.imgs.push(img.src);
+    }
+  }, {
+    key: "toHtmlElement",
+    value: function toHtmlElement() {
+      var div = document.createElement('div');
+      div.innerHTML = template(this.id, this.imgs);
+      var ret = div.firstChild;
+      $('' + this.id).carousel();
+      return ret;
+    }
+  }]);
+
+  return ImageSelector;
+}();
+
+exports.default = ImageSelector;
+
+var template = function template(id, imgs) {
+  return '' + "<div class=\"difference\">\n    <div id=\"".concat(id, "\" class=\"carousel\">\n        <ol class=\"custom-indicators\">").concat(imgs.map(function (_, i) {
+    return "\n            <li data-target=\"#".concat(id, "\" data-slide-to=\"").concat(i, "\"").concat(i == 0 ? ' class="active"' : '', ">\n                ").concat(i + 1, "\n            </li>");
+  }).reduce(function (prev, cur) {
+    return prev + cur;
+  }, ''), "\n        </ol>\n        <div class=\"carousel-inner\">").concat(imgs.map(function (img, i) {
+    return "\n            <div class=\"carousel-item".concat(i == 0 ? ' active' : '', "\">\n                <img class=\"img-fluid rounded\" src=\"").concat(img, "\">\n            </div>");
+  }).reduce(function (prev, cur) {
+    return prev + cur;
+  }, ''), "\n        </div>\n        <a class=\"carousel-control-prev\" href=\"#").concat(id, "\" role=\"button\" data-slide=\"prev\">\n            <i class=\"fa fa-chevron-left\"></i>\n        </a>\n        <a class=\"carousel-control-next\" href=\"#").concat(id, "\" role=\"button\" data-slide=\"next\">\n            <i class=\"fa fa-chevron-right\"></i>\n        </a>\n    </div>\n</div>");
+};
+},{}],"util.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -8213,6 +8273,8 @@ exports.default = InlineSelector;
 
 require("babel-polyfill");
 
+var _imageSelector = _interopRequireDefault(require("./image-selector"));
+
 var _inlineSelector = _interopRequireDefault(require("./inline-selector"));
 
 var _util = require("./util");
@@ -8236,7 +8298,7 @@ window.onload =
 _asyncToGenerator(
 /*#__PURE__*/
 regeneratorRuntime.mark(function _callee() {
-  var container;
+  var container, rt;
   return regeneratorRuntime.wrap(function _callee$(_context) {
     while (1) {
       switch (_context.prev = _context.next) {
@@ -8252,6 +8314,7 @@ regeneratorRuntime.mark(function _callee() {
         case 5:
           container.innerHTML = _context.sent;
           document.querySelectorAll('.text-wrapper').forEach(function (text) {
+            // wrap same versions
             var newChildren = [];
 
             _toConsumableArray(text.children).forEach(function (child) {
@@ -8265,7 +8328,8 @@ regeneratorRuntime.mark(function _callee() {
             text.innerHTML = '';
             newChildren.forEach(function (child) {
               return text.appendChild(child);
-            });
+            }); // add inline selectors
+
             newChildren = [];
 
             _toConsumableArray(text.children).forEach(function (child) {
@@ -8285,11 +8349,13 @@ regeneratorRuntime.mark(function _callee() {
               text.appendChild(child instanceof _inlineSelector.default ? child.toHtmlElement() : child);
             });
           });
+          rt = root();
+          rt.parentNode.replaceChild(collectCarousels(rt), rt);
           document.querySelectorAll('tr').forEach(function (row) {
             var cells = Object.freeze([].concat(_toConsumableArray(row.querySelectorAll('td')), _toConsumableArray(row.querySelectorAll('th')))); //
           });
 
-        case 8:
+        case 10:
         case "end":
           return _context.stop();
       }
@@ -8304,7 +8370,33 @@ function last(arr) {
 function root() {
   return document.querySelector('.root');
 }
-},{"babel-polyfill":"../node_modules/babel-polyfill/lib/index.js","./inline-selector":"inline-selector.js","./util":"util.js"}],"../node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
+/**
+ * @param {HTMLElement} el 
+ */
+
+
+function collectCarousels(el) {
+  var newChildren = [];
+
+  _toConsumableArray(el.children).forEach(function (child) {
+    if (newChildren.length && last(newChildren) instanceof _imageSelector.default && child instanceof HTMLImageElement) {
+      last(newChildren).push(child);
+    } else if (child instanceof HTMLImageElement) {
+      newChildren.push(new _imageSelector.default());
+      last(newChildren).push(child);
+    } else {
+      newChildren.push(collectCarousels(child));
+    }
+
+    el.removeChild(child);
+  });
+
+  newChildren.forEach(function (child) {
+    el.appendChild(child instanceof _imageSelector.default ? child.toHtmlElement() : child);
+  });
+  return el.cloneNode(true);
+}
+},{"babel-polyfill":"../node_modules/babel-polyfill/lib/index.js","./image-selector":"image-selector.js","./inline-selector":"inline-selector.js","./util":"util.js"}],"../node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
 var global = arguments[3];
 var OVERLAY_ID = '__parcel__error__overlay__';
 var OldModule = module.bundle.Module;

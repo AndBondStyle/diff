@@ -1,5 +1,6 @@
 import 'babel-polyfill';
 
+import ImageSelector from './image-selector';
 import InlineSelector from './inline-selector';
 import { vers } from './util';
 
@@ -7,6 +8,7 @@ window.onload = async () => {
     const container = document.querySelector('#diff-container');
     container.innerHTML = await (await fetch('diff.html')).text();
     document.querySelectorAll('.text-wrapper').forEach(text => {
+        // wrap same versions
         let newChildren = [];
         [...text.children].forEach(child => {
             if (newChildren.length && vers(last(newChildren)) == vers(child)) {
@@ -18,6 +20,7 @@ window.onload = async () => {
         text.innerHTML = '';
         newChildren.forEach(child => text.appendChild(child));
         
+        // add inline selectors
         newChildren = [];
         [...text.children].forEach(child => {
             if (newChildren.length &&
@@ -41,6 +44,9 @@ window.onload = async () => {
         });
     });
 
+    const rt = root();
+    rt.parentNode.replaceChild(collectCarousels(rt), rt);
+
     document.querySelectorAll('tr').forEach(row => {
         const cells = Object.freeze([
             ...row.querySelectorAll('td'),
@@ -56,4 +62,31 @@ function last(arr) {
 
 function root() {
     return document.querySelector('.root');
+}
+
+/**
+ * @param {HTMLElement} el 
+ */
+function collectCarousels(el) {
+    const newChildren = [];
+    [...el.children].forEach(child => {
+        if (newChildren.length &&
+                last(newChildren) instanceof ImageSelector &&
+                child instanceof HTMLImageElement) {
+            last(newChildren).push(child);
+        } else if (child instanceof HTMLImageElement) {
+            newChildren.push(new ImageSelector());
+            last(newChildren).push(child);
+        } else {
+            newChildren.push(collectCarousels(child));
+        }
+        el.removeChild(child);
+    });
+    newChildren.forEach(child => {
+        el.appendChild(
+            child instanceof ImageSelector ?
+            child.toHtmlElement() : child
+        );
+    });
+    return el.cloneNode(true);
 }

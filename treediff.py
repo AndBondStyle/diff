@@ -56,14 +56,22 @@ def flatten_children(root, no_versions=False):
 def similarity(a, b):
     # print('sim:', a, b)
     if a['data-ver'] == b['data-ver']: return 0
-    if a == b: return 1
     if is_atom(a) and is_atom(b):
         # return next(a.children) == next(b.children)
         return list(a.children) == list(b.children)
     if a.name != b.name: return 0
     a_children = flatten_children(a, no_versions=True)
     b_children = flatten_children(b, no_versions=True)
-    if not a_children and not b_children: return 1
+    if not a_children and not b_children:
+        attr_a = copy.copy(a.attrs)
+        attr_a.pop('data-ver', None)
+        attr_a.pop('data-group', None)
+        attr_a.pop('data-index', None)
+        attr_b = copy.copy(b.attrs)
+        attr_b.pop('data-ver', None)
+        attr_b.pop('data-group', None)
+        attr_b.pop('data-index', None)
+        return attr_a == attr_b
     common = reducer(a_children, b_children)
     # print('common:', common)
     return len(common) / min(len(a_children), len(b_children))

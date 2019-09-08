@@ -3,3 +3,6 @@ frontend/node_modules/
 
 # parcel cache
 frontend/.cache/
+
+# dist
+frontend/dist/

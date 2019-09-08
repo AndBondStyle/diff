@@ -29,6 +29,10 @@ def flatten_children(root, no_versions=False):
     children = [child for child in root.children if str(child).strip()]
     if root.name in ['table', 'tbody', 'thead', 'tfoot'] and no_versions:
         children = root.find_all('td') + root.find_all('th')
+    if root.name in ['table', 'thead', 'tbody', 'tfoot']:
+        for tr in root.find_all('tr'):
+            for i, td in enumerate(tr.find_all('td') + tr.find_all('th')):
+                td['data-index'] = i
     result = []
     for child in children:
         if child.name is None:
@@ -190,7 +194,6 @@ def merge(roots):
         root.append(copy.copy(item))
 
     return root
-
 
 def diff(files):
     roots = []

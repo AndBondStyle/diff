@@ -1,21 +1,59 @@
 import 'babel-polyfill';
 
+import InlineSelector from './inline-selector';
+import { vers } from './util';
+
 window.onload = async () => {
-    // const versions = document.body.getAttribute('data-ver').split(',');
-    // const hues = versions.map(value => (2 * value + 1) / (2 * versions.length) * 360)
     const container = document.querySelector('#diff-container');
     container.innerHTML = await (await fetch('diff.html')).text();
-    // document.querySelectorAll('.text-wrapper').forEach(text => {
-    //     const newChildren = [text.children[0]];
-    //     for (let i = 1; i < text.children.length; ++i) {
-    //         if (newChildren[newChildren.length - 1].getAttribute('data-ver') ===
-    //                 text.children[i].getAttribute('data-ver')) {
-    //             newChildren[newChildren.length - 1].innerHTML += text.children[i].innerHTML;
-    //         } else {
-    //             newChildren.push(text.children[i]);
-    //         }
-    //     }
-    //     text.innerHTML = '';
-    //     newChildren.forEach(child => text.appendChild(child));
-    // });
+    document.querySelectorAll('.text-wrapper').forEach(text => {
+        let newChildren = [];
+        [...text.children].forEach(child => {
+            if (newChildren.length && vers(last(newChildren)) == vers(child)) {
+                last(newChildren).innerHTML += child.innerHTML;
+            } else {
+                newChildren.push(child);
+            }
+        });
+        text.innerHTML = '';
+        newChildren.forEach(child => text.appendChild(child));
+        
+        newChildren = [];
+        [...text.children].forEach(child => {
+            if (newChildren.length &&
+                    last(newChildren) instanceof InlineSelector &&
+                    !last(newChildren).anyOf(vers(child))) {
+                last(newChildren).push(child);
+            } else if (vers(root()) == vers(child)) {
+                newChildren.push(child);
+            } else {
+                const selector = new InlineSelector();
+                selector.push(child);
+                newChildren.push(selector);
+            }
+        });
+        text.innerHTML = '';
+        newChildren.forEach(child => {
+            text.appendChild(
+                child instanceof InlineSelector ?
+                child.toHtmlElement() : child
+            );
+        });
+    });
+
+    document.querySelectorAll('tr').forEach(row => {
+        const cells = Object.freeze([
+            ...row.querySelectorAll('td'),
+            ...row.querySelectorAll('th')
+        ]);
+        //
+    });
+}
+
+function last(arr) {
+    return arr[arr.length - 1];
+}
+
+function root() {
+    return document.querySelector('.root');
 }

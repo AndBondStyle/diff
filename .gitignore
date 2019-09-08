@@ -1,2 +1,5 @@
 # node modules
 frontend/node_modules/
+
+# parcel cache
+frontend/.cache/
